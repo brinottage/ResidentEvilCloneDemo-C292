@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float jumpForce;
     [SerializeField] float mouseSensitivity;
     [SerializeField] float verticalLookLimit;
+    [SerializeField] private Transform firePoint;
     private bool isGrounded = true;
     private float xRotation;
 
@@ -20,9 +21,10 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
 
-        rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;
+        Cursor.visible = false;
+
+        rb = GetComponent<Rigidbody>();
         
     }
 
@@ -34,13 +36,18 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded) {
             Jump();
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Shoot();
+        }
     }
 
     void LookAround()
     {
         
-        float mouseX = Input.GetAxis("MouseX") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("MouseY") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         transform.Rotate (Vector3.up * mouseX);
 
@@ -66,7 +73,7 @@ public class PlayerController : MonoBehaviour
     void Jump(){
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 
-        isGrounded = false;
+        //isGrounded = false;
 
     }
 
@@ -79,6 +86,19 @@ public class PlayerController : MonoBehaviour
     private void OnCollisionExit(Collision collision){
         if (collision.gameObject.tag == "Ground"){
             isGrounded = false;
+        }
+    }
+
+    private void Shoot()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, 100))
+        {
+            Debug.DrawRay(firePoint.position, firePoint.forward * hit.distance, Color.red, 2f);
+            if (hit.transform.CompareTag("Zombie"))
+            {
+                hit.transform.GetComponent<Zombie>().TakeDamage(1);
+            }
         }
     }
 }
